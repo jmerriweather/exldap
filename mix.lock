@@ -1,0 +1,1 @@
+%{"eldap": {:git, "https://github.com/etnt/eldap.git", "880d67ead58acd9bc973f8e7adebd922368f15ec", []}}

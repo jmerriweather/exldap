@@ -1,7 +1,7 @@
 defmodule Exldap do
 
   @doc ~S"""
-  Connects to an LDAP server using the settings defined in config.exs
+  Connects to a LDAP server using the settings defined in config.exs
 
   """
   def connect do
@@ -18,7 +18,7 @@ defmodule Exldap do
 
 
   @doc ~S"""
-  Connects to an LDAP server using the arguments passed into the function
+  Connects to a LDAP server using the arguments passed into the function
 
   """
   def connect(server, port, ssl, user_dn, password) when is_binary(server) do
@@ -74,7 +74,7 @@ defmodule Exldap do
   end
 
   @doc ~S"""
-  Searches for an LDAP entry, the base dn is obtained from the config.exs
+  Searches for a LDAP entry, the base dn is obtained from the config.exs
 
   """
   def search_field(connection, field, name) do
@@ -85,7 +85,7 @@ defmodule Exldap do
 
 
   @doc ~S"""
-  Searches for an LDAP entry using the arguments passed into the function
+  Searches for a LDAP entry using the arguments passed into the function
 
   """
   def search_field(connection, base, field, name) when is_list(name) do
@@ -98,9 +98,12 @@ defmodule Exldap do
     scope = {:scope, :eldap.wholeSubtree()}
     search = [base_config, scope, filter]
 
-    {:ok, result} = :eldap.search(connection, search)
-    result = Exldap.SearchResult.from_record(result)
+    case :eldap.search(connection, search) do
+      {:ok, result} ->
+        result = Exldap.SearchResult.from_record(result)
+        {:ok, result.entries |> Enum.map(fn(x) -> Exldap.Entry.from_record(x) end)}
+      {_, message} -> {:error, message}
+    end
 
-    result.entries |> Enum.map(fn(x) -> Exldap.Entry.from_record(x) end)
   end
 end

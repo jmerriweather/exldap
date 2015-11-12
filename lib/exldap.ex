@@ -13,11 +13,11 @@ defmodule Exldap do
   end
 
 
-  defp connect(server, port, ssl, user_dn, password) when is_binary(server) do
+  def connect(server, port, ssl, user_dn, password) when is_binary(server) do
     connect :erlang.binary_to_list(server), port, ssl, user_dn, password
   end
 
-  defp connect(server, port, ssl, user_dn, password) do
+  def connect(server, port, ssl, user_dn, password) do
     {:ok, connection} = :eldap.open([server], [{:port, port},{:ssl, ssl}])
 
     bind_connection(connection, user_dn, password)

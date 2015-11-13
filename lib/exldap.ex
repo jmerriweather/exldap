@@ -71,6 +71,13 @@ defmodule Exldap do
     verify_credentials connection, :erlang.binary_to_list(user_dn), :erlang.binary_to_list(password)
   end
 
+  def verify_credentials(connection, user_dn, password) when is_list(user_dn) and is_binary(password) do
+    verify_credentials connection, user_dn, :erlang.binary_to_list(password)
+  end
+  def verify_credentials(connection, user_dn, password) when is_binary(user_dn) and is_list(password) do
+    verify_credentials connection, :erlang.binary_to_list(user_dn), password
+  end
+
   def verify_credentials(connection, user_dn, password) do
     :eldap.simple_bind(connection, user_dn, password)
   end

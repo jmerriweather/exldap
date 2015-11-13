@@ -2,7 +2,6 @@ defmodule Exldap do
 
   @doc ~S"""
   Connects to a LDAP server using the settings defined in config.exs
-
   """
   def connect do
     settings = Application.get_env :exldap, :settings
@@ -19,7 +18,6 @@ defmodule Exldap do
 
   @doc ~S"""
   Connects to a LDAP server using the arguments passed into the function
-
   """
   def connect(server, port, ssl, user_dn, password) when is_binary(server) do
     connect :erlang.binary_to_list(server), port, ssl, user_dn, password
@@ -37,7 +35,6 @@ defmodule Exldap do
 
   @doc ~S"""
   Open a connection to the LDAP server using the settings defined in config.exs
-
   """
   def open do
     settings = Application.get_env :exldap, :settings
@@ -51,7 +48,6 @@ defmodule Exldap do
 
   @doc ~S"""
   Open a connection to the LDAP server
-
   """
   def open(server, port, ssl) when is_binary(server) do
       open(:erlang.binary_to_list(server), port, ssl)
@@ -61,9 +57,15 @@ defmodule Exldap do
     :eldap.open([server], [{:port, port},{:ssl, ssl}])
   end
 
+    @doc ~S"""
+    Shutdown a connection to the LDAP server
+    """
+  def close(connection) do
+    :eldap.close(connection)
+  end
+
   @doc ~S"""
   Verify the credentials against a LDAP connection
-
   """
   def verify_credentials(connection, user_dn, password) when is_binary(user_dn) and is_binary(password) do
     verify_credentials connection, :erlang.binary_to_list(user_dn), :erlang.binary_to_list(password)
@@ -75,7 +77,6 @@ defmodule Exldap do
 
   @doc ~S"""
   Searches for a LDAP entry, the base dn is obtained from the config.exs
-
   """
   def search_field(connection, field, name) do
     settings = Application.get_env :exldap, :settings
@@ -86,7 +87,6 @@ defmodule Exldap do
 
   @doc ~S"""
   Searches for a LDAP entry using the arguments passed into the function
-
   """
   def search_field(connection, base, field, name) when is_list(name) do
     search_field connection, base, field, :erlang.list_to_binary name

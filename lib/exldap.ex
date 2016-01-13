@@ -96,7 +96,7 @@ defmodule Exldap do
   Searches for a LDAP entry using the arguments passed into the function
   """
   def search_field(connection, base, field, name) when is_list(name) do
-    search_field connection, base, field, :erlang.list_to_binary name
+    search_field connection, base, field, :erlang.list_to_binary(name)
   end
 
   def search_field(connection, base, field, name) do
@@ -113,4 +113,18 @@ defmodule Exldap do
     end
 
   end
+
+  def search_attributes(%Exldap.Entry{} = entry, key) when is_binary(key) do
+    search_attributes(entry, :erlang.binary_to_list(key))
+  end
+
+  def search_attributes(%Exldap.Entry{} = entry, key) when is_list(key) do
+    if List.keymember?(entry.attributes, key, 0) do
+      {_, value} = List.keyfind(entry.attributes, key, 0)
+      :erlang.list_to_binary(value)
+    else
+      nil
+    end
+  end
+
 end

@@ -2,9 +2,9 @@ defmodule Exldap.SearchResult do
   require Record
 
   record = Record.extract(:eldap_search_result, from_lib: "eldap/include/eldap.hrl")
-  keys   = :lists.map(&elem(&1, 0), record)
-  vals   = :lists.map(&{&1, [], nil}, keys)
-  pairs  = :lists.zip(keys, vals)
+  keys   = Enum.map(record, &elem(&1, 0))
+  vals   = Enum.map(keys, &{&1, [], nil})
+  pairs  = Enum.zip(keys, vals)
 
   defstruct keys
   @type t :: %__MODULE__{}

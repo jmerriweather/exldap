@@ -190,7 +190,14 @@ defmodule Exldap do
   def search_attributes(%Exldap.Entry{} = entry, key) when is_list(key) do
     if List.keymember?(entry.attributes, key, 0) do
       {_, value} = List.keyfind(entry.attributes, key, 0)
-      :erlang.list_to_binary(value)
+      results = Enum.map(value, fn(x) ->
+        :erlang.list_to_binary(x)
+      end)
+      if Enum.count(results) == 1 do
+        List.first(results)
+      else
+        results
+      end
     else
       nil
     end

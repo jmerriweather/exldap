@@ -1,1 +1,2 @@
-%{"eldap": {:git, "https://github.com/etnt/eldap.git", "880d67ead58acd9bc973f8e7adebd922368f15ec", []}}
+%{"earmark": {:hex, :earmark, "0.2.0"},
+  "ex_doc": {:hex, :ex_doc, "0.11.3"}}

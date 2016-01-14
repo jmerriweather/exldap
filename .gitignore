@@ -3,6 +3,7 @@
 /deps
 erl_crash.dump
 *.ez
+/doc
 
 
 /config/config.secret.exs

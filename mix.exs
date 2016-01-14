@@ -1,7 +1,7 @@
 defmodule Exldap.Mixfile do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
   @url "https://github.com/jmerriweather/exldap"
   @maintainers ["Jonathan Merriweather"]
 
@@ -27,7 +27,7 @@ defmodule Exldap.Mixfile do
       maintainers: @maintainers,
       licenses: ["MIT"],
       links: %{"GitHub" => @url},
-      files: ~w(lib) ++ ~w(LICENSE.md README.md)
+      files: ~w(lib) ++ ~w(LICENSE.md mix.exs README.md)
     ]
   end
 

@@ -2,6 +2,14 @@ defmodule Exldap do
 
   @doc ~S"""
   Connects to a LDAP server using the settings defined in config.exs
+
+  ## Example
+
+      iex> Exldap.connect
+      {:ok, connection}
+      Or
+      {:error, error_description}
+
   """
   def connect do
     settings = Application.get_env :exldap, :settings
@@ -18,6 +26,14 @@ defmodule Exldap do
 
   @doc ~S"""
   Connects to a LDAP server using the arguments passed into the function
+
+  ## Example
+
+      iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD")
+      {:ok, connection}
+      Or
+      {:error, error_description}
+
   """
   def connect(server, port, ssl, user_dn, password) when is_binary(server) do
     connect :erlang.binary_to_list(server), port, ssl, user_dn, password
@@ -25,16 +41,27 @@ defmodule Exldap do
 
   def connect(server, port, ssl, user_dn, password) do
 
-    {:ok, connection} = open(server, port, ssl)
-
-    case verify_credentials(connection, user_dn, password) do
-      :ok -> {:ok, connection}
-      {_, message} -> {:error, message}
+    case open(server, port, ssl) do
+      {:ok, connection} ->
+        case verify_credentials(connection, user_dn, password) do
+          :ok -> {:ok, connection}
+          {_, message} -> {:error, message}
+        end
+      error -> error
     end
+
   end
 
   @doc ~S"""
   Open a connection to the LDAP server using the settings defined in config.exs
+
+  ## Example
+
+      iex> Exldap.open
+      {:ok, connection}
+      Or
+      {:error, error_description}
+
   """
   def open do
     settings = Application.get_env :exldap, :settings
@@ -48,6 +75,14 @@ defmodule Exldap do
 
   @doc ~S"""
   Open a connection to the LDAP server
+
+  ## Example
+
+      iex> Exldap.open("SERVERADDRESS", 636, true)
+      {:ok, connection}
+      Or
+      {:error, error_description}
+
   """
   def open(server, port, ssl) when is_binary(server) do
       open(:erlang.binary_to_list(server), port, ssl)
@@ -57,15 +92,28 @@ defmodule Exldap do
     :eldap.open([server], [{:port, port},{:ssl, ssl}])
   end
 
-    @doc ~S"""
-    Shutdown a connection to the LDAP server
-    """
+  @doc ~S"""
+  Shutdown a connection to the LDAP server
+
+  ## Example
+
+      iex> Exldap.close(connection)
+
+  """
   def close(connection) do
     :eldap.close(connection)
   end
 
   @doc ~S"""
   Verify the credentials against a LDAP connection
+
+  ## Example
+
+      iex> Exldap.verify_credentials(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD")
+      :ok --> Successfully connected
+      Or
+      {:error, :invalidCredentials} --> Failed to connect
+
   """
   def verify_credentials(connection, user_dn, password) when is_binary(user_dn) and is_binary(password) do
     verify_credentials connection, :erlang.binary_to_list(user_dn), :erlang.binary_to_list(password)
@@ -84,6 +132,12 @@ defmodule Exldap do
 
   @doc ~S"""
   Searches for a LDAP entry, the base dn is obtained from the config.exs
+
+  ## Example
+
+      iex> Exldap.search_field(connection, "cn", "useraccount")
+      {:ok, search_results}
+
   """
   def search_field(connection, field, name) do
     settings = Application.get_env :exldap, :settings
@@ -94,6 +148,12 @@ defmodule Exldap do
 
   @doc ~S"""
   Searches for a LDAP entry using the arguments passed into the function
+
+  ## Example
+
+      iex> Exldap.search_field(connection, "OU=Accounts,DC=example,DC=com", "cn", "useraccount")
+      {:ok, search_results}
+
   """
   def search_field(connection, base, field, name) when is_list(name) do
     search_field connection, base, field, :erlang.list_to_binary(name)
@@ -114,6 +174,15 @@ defmodule Exldap do
 
   end
 
+  @doc ~S"""
+  Searches a LDAP entry and extracts an attribute based on the specified key, if the attribute does not exist returns nil
+
+  ## Example
+
+      iex> Exldap.search_attributes(first_result, "displayName")
+      "Test User"
+
+  """
   def search_attributes(%Exldap.Entry{} = entry, key) when is_binary(key) do
     search_attributes(entry, :erlang.binary_to_list(key))
   end

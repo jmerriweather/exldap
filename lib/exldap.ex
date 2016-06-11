@@ -11,7 +11,7 @@ defmodule Exldap do
       {:error, error_description}
 
   """
-  def connect do
+  def connect(timeout \\ :infinity) do
     settings = Application.get_env :exldap, :settings
 
     server = settings |> Dict.get(:server)
@@ -20,7 +20,7 @@ defmodule Exldap do
     user_dn = settings |> Dict.get(:user_dn)
     password = settings |> Dict.get(:password)
 
-    connect(server, port, ssl, user_dn, password)
+    connect(server, port, ssl, user_dn, password, timeout)
   end
 
 
@@ -35,13 +35,15 @@ defmodule Exldap do
       {:error, error_description}
 
   """
-  def connect(server, port, ssl, user_dn, password) when is_binary(server) do
-    connect :erlang.binary_to_list(server), port, ssl, user_dn, password
+  def connect(server, port, ssl, user_dn, password, timeout \\ :infinity)
+
+  def connect(server, port, ssl, user_dn, password, timeout) when is_binary(server) do
+    connect(:erlang.binary_to_list(server), port, ssl, user_dn, password, timeout)
   end
 
-  def connect(server, port, ssl, user_dn, password) do
+  def connect(server, port, ssl, user_dn, password, timeout) do
 
-    case open(server, port, ssl) do
+    case open(server, port, ssl, timeout) do
       {:ok, connection} ->
         case verify_credentials(connection, user_dn, password) do
           :ok -> {:ok, connection}
@@ -63,14 +65,14 @@ defmodule Exldap do
       {:error, error_description}
 
   """
-  def open do
+  def open(timeout \\ :infinity) do
     settings = Application.get_env :exldap, :settings
 
     server = settings |> Dict.get(:server)
     port = settings |> Dict.get(:port)
     ssl = settings |> Dict.get(:ssl)
 
-    open(server, port, ssl)
+    open(server, port, ssl, timeout)
   end
 
   @doc ~S"""
@@ -84,12 +86,18 @@ defmodule Exldap do
       {:error, error_description}
 
   """
-  def open(server, port, ssl) when is_binary(server) do
-      open(:erlang.binary_to_list(server), port, ssl)
+  def open(server, port, ssl, timeout \\ :infinity)
+
+  def open(server, port, ssl, timeout) when is_binary(server) do
+      open(:erlang.binary_to_list(server), port, ssl, timeout)
   end
 
-  def open(server, port, ssl) do
-    :eldap.open([server], [{:port, port},{:ssl, ssl}])
+  def open(server, port, ssl, timeout) when is_atom(timeout) do
+    :eldap.open([server], [{:port, port}, {:ssl, ssl}])
+  end
+
+  def open(server, port, ssl, timeout) do
+    :eldap.open([server], [{:port, port}, {:ssl, ssl}, {:timeout, timeout}])
   end
 
   @doc ~S"""
@@ -156,14 +164,18 @@ defmodule Exldap do
 
   """
   def search_field(connection, base, field, name) when is_list(name) do
-    search_field connection, base, field, :erlang.list_to_binary(name)
+    search_field(connection, base, field, :erlang.list_to_binary(name))
   end
 
   def search_field(connection, base, field, name) do
+    settings = Application.get_env :exldap, :settings
+    search_timeout = settings |> Dict.get(:search_timeout) || 0
+
     filter = {:filter, :eldap.equalityMatch(field, name)}
     base_config = {:base, base}
     scope = {:scope, :eldap.wholeSubtree()}
-    search = [base_config, scope, filter]
+    timeout = {:timeout, search_timeout}
+    search = [base_config, scope, filter, timeout]
 
     case :eldap.search(connection, search) do
       {:ok, result} ->

@@ -5,7 +5,7 @@ defmodule Exldap do
 
   ## Example
 
-      iex> Exldap.connect
+      iex> Exldap.connect(timeout \\ :infinity)
       {:ok, connection}
       Or
       {:error, error_description}
@@ -29,7 +29,7 @@ defmodule Exldap do
 
   ## Example
 
-      iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD")
+      iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", timeout \\ :infinity)
       {:ok, connection}
       Or
       {:error, error_description}
@@ -59,7 +59,7 @@ defmodule Exldap do
 
   ## Example
 
-      iex> Exldap.open
+      iex> Exldap.open(timeout \\ :infinity)
       {:ok, connection}
       Or
       {:error, error_description}
@@ -80,7 +80,7 @@ defmodule Exldap do
 
   ## Example
 
-      iex> Exldap.open("SERVERADDRESS", 636, true)
+      iex> Exldap.open("SERVERADDRESS", 636, true, timeout \\ :infinity)
       {:ok, connection}
       Or
       {:error, error_description}

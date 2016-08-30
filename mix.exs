@@ -1,7 +1,7 @@
 defmodule Exldap.Mixfile do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.2.1"
   @url "https://github.com/jmerriweather/exldap"
   @maintainers ["Jonathan Merriweather"]
 
@@ -43,7 +43,7 @@ defmodule Exldap.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :crypto, :public_key, :ssl]]
+    [applications: [:logger, :crypto, :public_key, :ssl, :eldap]]
   end
 
   # Dependencies can be Hex packages:
@@ -57,8 +57,8 @@ defmodule Exldap.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:earmark, ">= 0.0.0", only: :dev},
-      {:ex_doc, "~> 0.11", only: :dev}
+      {:earmark, ">= 1.0.1", only: :dev},
+      {:ex_doc, "~> 0.13", only: :dev}
     ]
   end
 end

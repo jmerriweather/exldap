@@ -175,19 +175,37 @@ defmodule Exldap do
     base_config = {:base, base}
     scope = {:scope, :eldap.wholeSubtree()}
     timeout = {:timeout, search_timeout}
-    search = [base_config, scope, filter, timeout]
+    options = [base_config, scope, filter, timeout]
 
-    case :eldap.search(connection, search) do
-      {:ok, result} ->
-        result = Exldap.SearchResult.from_record(result)
-        {:ok, result.entries |> Enum.map(fn(x) -> Exldap.Entry.from_record(x) end)}
-      {_, message} -> {:error, message}
-    end
-
+    search(connection, options)
   end
 
   @doc ~S"""
-  Searches a LDAP entry and extracts an attribute based on the specified key, if the attribute does not exist returns nil
+  Searches for a LDAP entry using the supplier connection and options list.
+  Options list should be in the following format: [base, scope, filter, timeout]. Please refer to eldap:search
+
+  ## Example
+
+      iex> base_config = {:base, 'OU=Accounts,DC=example,DC=com'}
+      iex> scope = {:scope, :eldap.wholeSubtree()}
+      iex> filter = {:filter, :eldap.substrings('cn', [{:any,'userac'}])} # Note: strings are charlist
+      iex> timeout = {:timeout, 1000}
+      iex> Exldap.search(connection, [base_config, scope, filter, timeout])
+      {:ok, search_results}
+
+  """
+  def search(connection, options) do
+    case :eldap.search(connection, options) do
+      {:ok, result} ->
+        result = Exldap.SearchResult.from_record(result)
+        {:ok, result.entries |> Enum.map(fn(x) -> Exldap.Entry.from_record(x) end)}
+      {_, message} -> 
+        {:error, message}
+    end
+  end
+
+  @doc ~S"""
+  Searches for a LDAP entry and extracts an attribute based on the specified key, if the attribute does not exist returns nil
 
   ## Example
 

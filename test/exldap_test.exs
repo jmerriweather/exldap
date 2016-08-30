@@ -7,7 +7,7 @@ defmodule ExldapTest do
 
     {:ok, search_result} = Exldap.search_field(connection, "cn", "test123")
 
-    {:ok, first_result} = search_result |> Enum.fetch 0
+    {:ok, first_result} = search_result |> Enum.fetch(0)
 
     object_sid = first_result.attributes['cn']
 

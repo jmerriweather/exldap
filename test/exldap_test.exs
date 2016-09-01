@@ -3,7 +3,7 @@ defmodule ExldapTest do
 
   # The tests in this file rely on having correct LDAP details set in config/config.secure.exs
   # and on have a 'test123' user account with a 'samAccountName' attribute of 'test123' and a 'cn' attribute of 'test123'
-  # the test123 account should also be a member of multiple groups
+  # the test123 account should also be a member of multiple groups and NOT be disabled
 
   test "connect should connect with correct details and timeout set" do    
     settings = Application.get_env :exldap, :settings
@@ -266,10 +266,11 @@ defmodule ExldapTest do
     last_name_filter = Exldap.equalityMatch("sn", "123")
     greaterOrEqual_filter = Exldap.greaterOrEqual("badPasswordTime", "10")
     lessOrEqual_filter = Exldap.lessOrEqual("badPwdCount", "10")
+    exclude_disabled_accounts = Exldap.extensibleMatch("2", [{:type, "userAccountControl"}, {:matchingRule, "1.2.840.113556.1.4.803"}]) |> Exldap.negate
     
     objectClass_present = Exldap.present("objectClass")
 
-    and_filter = Exldap.with_and([cn_filter, last_name_filter, greaterOrEqual_filter, lessOrEqual_filter, objectClass_present])
+    and_filter = Exldap.with_and([cn_filter, last_name_filter, greaterOrEqual_filter, lessOrEqual_filter, objectClass_present, exclude_disabled_accounts])
 
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_with_filter(connection, and_filter)

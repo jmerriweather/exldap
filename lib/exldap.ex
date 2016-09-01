@@ -293,6 +293,21 @@ defmodule Exldap do
   end
 
   @doc ~S"""
+  Creates an extensible match filter. Please refer to eldap:extensibleMatch
+
+  ## Example
+
+      iex> exclude_disabled_accounts = Exldap.extensibleMatch("2", [{:type, "userAccountControl"}, {:matchingRule, "1.2.840.113556.1.4.803"}]) |> Exldap.negate
+      
+  """
+  def extensibleMatch(match_value, match_attributes) do    
+    list_as_charlist = Enum.map(match_attributes, fn({atom, match_attribute}) -> 
+      {atom, to_charlist(match_attribute)} 
+    end)
+    :eldap.extensibleMatch(to_charlist(match_value), list_as_charlist)
+  end
+
+  @doc ~S"""
   Allows you to combine filters in a boolean 'and' expression. Please refer to eldap:and
 
   ## Example

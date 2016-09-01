@@ -354,14 +354,14 @@ defmodule Exldap do
   Microsoft SID Stucture reference: http://www.selfadsi.org/deep-inside/microsoft-sid-attributes.htm
   """ 
   def sid_to_string(sid) do    
-    <<revision :: size(8), sub_id_count :: size(8), identifier_authority :: binary-size(6), sub_authorities :: binary>> = sid
+    <<revision :: size(8), sub_id_count :: size(8), identifier_authority :: size(48), sub_authorities :: binary>> = sid
 
-    sid_string = "S-" <> to_string(revision) <> "-" <> to_string(sub_id_count)
+    sid_string = "S-" <> to_string(revision) <> "-" <> to_string(identifier_authority)
     build_sub_authority(sub_authorities, sid_string, sub_id_count) 
   end
 
   defp build_sub_authority(data, sid_string, n) when n <= 1 do
-    <<sub_authority :: size(4)-little-unsigned-integer-unit(8), remainder :: binary>> = data
+    <<sub_authority :: size(4)-little-unsigned-integer-unit(8), _remainder :: binary>> = data
     sid_string <>  "-" <> to_string(sub_authority)
   end
 

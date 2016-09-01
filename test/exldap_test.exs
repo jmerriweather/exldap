@@ -4,6 +4,7 @@ defmodule ExldapTest do
   # The tests in this file rely on having correct LDAP details set in config/config.secure.exs
   # and on have a 'test123' user account with a 'samAccountName' attribute of 'test123' and a 'cn' attribute of 'test123'
   # the test123 account should also be a member of multiple groups and NOT be disabled
+  # test123 account also has a objectSid of S-1-5-21-3173687960-2960108146-1059612393-9004
 
   test "connect should connect with correct details and timeout set" do    
     settings = Application.get_env :exldap, :settings
@@ -279,6 +280,19 @@ defmodule ExldapTest do
     object_cn = Exldap.search_attributes(first_result, "cn")
     
     assert object_cn == "test123"
+  end
+
+  test "search for test123 and convert the objectSid into a string" do
+    {:ok, connection} = Exldap.connect
+
+    {:ok, search_result} = Exldap.search_field(connection, "cn", "test123")
+    
+    {:ok, first_result} = search_result |> Enum.fetch(0)
+    object_sid = Exldap.search_attributes(first_result, "objectSid")
+
+    sid_string = Exldap.sid_to_string(object_sid)
+
+    assert sid_string == "S-1-5-21-3173687960-2960108146-1059612393-9004"
   end
 
   test "open LDAP connect and attempt authentication" do

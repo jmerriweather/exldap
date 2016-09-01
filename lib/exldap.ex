@@ -348,6 +348,27 @@ defmodule Exldap do
   def negate(filter) do
     :eldap.not(filter)
   end
+
+  @doc ~S"""
+  Converts a binary representation of a Microsoft SID into SDDL notation
+  Microsoft SID Stucture reference: http://www.selfadsi.org/deep-inside/microsoft-sid-attributes.htm
+  """ 
+  def sid_to_string(sid) do    
+    <<revision :: size(8), sub_id_count :: size(8), identifier_authority :: binary-size(6), sub_authorities :: binary>> = sid
+
+    sid_string = "S-" <> to_string(revision) <> "-" <> to_string(sub_id_count)
+    build_sub_authority(sub_authorities, sid_string, sub_id_count) 
+  end
+
+  defp build_sub_authority(data, sid_string, n) when n <= 1 do
+    <<sub_authority :: size(4)-little-unsigned-integer-unit(8), remainder :: binary>> = data
+    sid_string <>  "-" <> to_string(sub_authority)
+  end
+
+  defp build_sub_authority(<<sub_authority :: size(4)-little-unsigned-integer-unit(8), remainder :: binary>>, sid_string, n) do
+    built_sid = sid_string <> "-" <> to_string(sub_authority)
+    build_sub_authority(remainder, built_sid, n - 1)
+  end
   
   @doc ~S"""
   Search LDAP with a raw filter function, the base to search within is obtained from config.secret.exs. 

@@ -4,7 +4,6 @@ defmodule ExldapTest do
   # The tests in this file rely on having correct LDAP details set in config/config.secure.exs
   # and on have a 'test123' user account with a 'samAccountName' attribute of 'test123' and a 'cn' attribute of 'test123'
   # the test123 account should also be a member of multiple groups and NOT be disabled
-  # test123 account also has a objectSid of S-1-5-21-3173687960-2960108146-1059612393-9004
 
   test "connect should connect with correct details and timeout set" do    
     settings = Application.get_env :exldap, :settings
@@ -283,16 +282,20 @@ defmodule ExldapTest do
   end
 
   test "search for test123 and convert the objectSid into a string" do
-    {:ok, connection} = Exldap.connect
+    binary_sid = <<0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x15, 0x00, 0x00, 0x00, 0x98, 0xA2, 0x2A, 0xBD, 0x72, 0xAA, 0x6F, 0xB0, 0xE9, 0x66, 0x28, 0x3F, 0x2C, 0x23, 0x00, 0x00>>
 
-    {:ok, search_result} = Exldap.search_field(connection, "cn", "test123")
-    
-    {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_sid = Exldap.search_attributes(first_result, "objectSid")
-
-    sid_string = Exldap.sid_to_string(object_sid)
+    sid_string = Exldap.sid_to_string(binary_sid)
 
     assert sid_string == "S-1-5-21-3173687960-2960108146-1059612393-9004"
+  end
+
+  test "convert sid string into binary sid" do
+    string_sid = "S-1-5-21-3173687960-2960108146-1059612393-9004"
+    desired_binary = <<0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x15, 0x00, 0x00, 0x00, 0x98, 0xA2, 0x2A, 0xBD, 0x72, 0xAA, 0x6F, 0xB0, 0xE9, 0x66, 0x28, 0x3F, 0x2C, 0x23, 0x00, 0x00>>
+
+    binary_sid = Exldap.string_to_sid(string_sid)
+    
+    assert binary_sid == desired_binary
   end
 
   test "open LDAP connect and attempt authentication" do

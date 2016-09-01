@@ -369,6 +369,36 @@ defmodule Exldap do
     built_sid = sid_string <> "-" <> to_string(sub_authority)
     build_sub_authority(remainder, built_sid, n - 1)
   end
+
+  @doc ~S"""
+  Converts a SDDL representation of a Microsoft SID into a binary
+  Microsoft SID Stucture reference: http://www.selfadsi.org/deep-inside/microsoft-sid-attributes.htm
+  """ 
+  def string_to_sid(sid_string) do
+    <<"S-", revision_string, "-", identifier_authority_string, "-", sub_authorities :: binary>> = sid_string
+
+     revision = String.to_integer(<<revision_string>>)
+     identifier_authority = String.to_integer(<<identifier_authority_string>>)
+     sub_authorities_list = String.split(sub_authorities, "-")
+     {sub_id_count, sid_binary} = deconstruct_sub_authority(sub_authorities_list)
+     <<revision :: size(8), sub_id_count :: size(8), identifier_authority :: size(48)>> <> sid_binary
+  end
+
+  defp deconstruct_sub_authority([first | rest]) do
+    sub_authority = String.to_integer(first)
+    sid = <<sub_authority :: size(4)-little-unsigned-integer-unit(8)>> 
+    deconstruct_sub_authority(rest, sid, 1)
+  end
+
+  defp deconstruct_sub_authority([first | rest], binary_sid, sub_id_count) do
+    sub_authority = String.to_integer(first)
+    sid = binary_sid <> <<sub_authority :: size(4)-little-unsigned-integer-unit(8)>> 
+    deconstruct_sub_authority(rest, sid, sub_id_count + 1)
+  end
+
+  defp deconstruct_sub_authority([], binary_sid, sub_id_count) do
+    {sub_id_count, binary_sid} 
+  end
   
   @doc ~S"""
   Search LDAP with a raw filter function, the base to search within is obtained from config.secret.exs. 

@@ -145,7 +145,7 @@ defmodule Exldap do
 
   """
   def verify_credentials(connection, user_dn, password) do
-    :eldap.simple_bind(connection, to_charlist(user_dn), to_charlist(password))
+    :eldap.simple_bind(connection, user_dn, password)
   end
 
   @doc ~S"""

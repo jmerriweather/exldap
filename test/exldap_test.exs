@@ -7,11 +7,11 @@ defmodule ExldapTest do
 
   test "connect should connect with correct details and timeout set" do    
     settings = Application.get_env :exldap, :settings
-    server = settings |> Dict.get(:server)
-    port = settings |> Dict.get(:port)
-    ssl = settings |> Dict.get(:ssl)
-    user_dn = settings |> Dict.get(:user_dn)
-    password = settings |> Dict.get(:password)
+    server = settings |> Keyword.get(:server)
+    port = settings |> Keyword.get(:port)
+    ssl = settings |> Keyword.get(:ssl)
+    user_dn = settings |> Keyword.get(:user_dn)
+    password = settings |> Keyword.get(:password)
 
     {result, _} = Exldap.connect(server, port, ssl, user_dn, password, 1000)
 
@@ -20,11 +20,11 @@ defmodule ExldapTest do
 
   test "connect should connect with correct details without the timeout set" do    
     settings = Application.get_env :exldap, :settings
-    server = settings |> Dict.get(:server)
-    port = settings |> Dict.get(:port)
-    ssl = settings |> Dict.get(:ssl)
-    user_dn = settings |> Dict.get(:user_dn)
-    password = settings |> Dict.get(:password)
+    server = settings |> Keyword.get(:server)
+    port = settings |> Keyword.get(:port)
+    ssl = settings |> Keyword.get(:ssl)
+    user_dn = settings |> Keyword.get(:user_dn)
+    password = settings |> Keyword.get(:password)
 
     {result, _} = Exldap.connect(server, port, ssl, user_dn, password)
 
@@ -45,9 +45,9 @@ defmodule ExldapTest do
 
   test "open works with timeout set" do
     settings = Application.get_env :exldap, :settings
-    server = settings |> Dict.get(:server)
-    port = settings |> Dict.get(:port)
-    ssl = settings |> Dict.get(:ssl)
+    server = settings |> Keyword.get(:server)
+    port = settings |> Keyword.get(:port)
+    ssl = settings |> Keyword.get(:ssl)
 
     {success, _} = Exldap.open(server, port, ssl, 1000)
 
@@ -56,9 +56,9 @@ defmodule ExldapTest do
 
   test "open works without timeout set" do
     settings = Application.get_env :exldap, :settings
-    server = settings |> Dict.get(:server)
-    port = settings |> Dict.get(:port)
-    ssl = settings |> Dict.get(:ssl)
+    server = settings |> Keyword.get(:server)
+    port = settings |> Keyword.get(:port)
+    ssl = settings |> Keyword.get(:ssl)
 
     {success, _} = Exldap.open(server, port, ssl)
 
@@ -96,7 +96,7 @@ defmodule ExldapTest do
 
   test "search initial substring with binary input" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, "samAccountName", {:initial, "test123"})
@@ -109,7 +109,7 @@ defmodule ExldapTest do
 
   test "search initial substring with charlist input" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base) |> to_charlist
+    base = settings |> Keyword.get(:base) |> to_charlist
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, 'samAccountName', {:initial, 'test123'})
@@ -142,7 +142,7 @@ defmodule ExldapTest do
 
   test "search any substring with binary input" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, "cn", "test123")
@@ -155,7 +155,7 @@ defmodule ExldapTest do
 
   test "search any substring with charlist input" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base) |> to_charlist
+    base = settings |> Keyword.get(:base) |> to_charlist
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, 'cn', 'test123')
@@ -168,7 +168,7 @@ defmodule ExldapTest do
 
   test "search final substring with binary input" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, "cn", {:final, "test123"})
@@ -181,7 +181,7 @@ defmodule ExldapTest do
 
   test "search final substring with charlist input" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base) |> to_charlist
+    base = settings |> Keyword.get(:base) |> to_charlist
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, 'cn', {:final, 'test123'})
@@ -194,7 +194,7 @@ defmodule ExldapTest do
 
   test "search with multiple results returns list" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, "samAccountName", "test")
@@ -205,7 +205,7 @@ defmodule ExldapTest do
 
   test "search attributes with multiple results returns list" do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
     
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, "cn", {:initial, 'test123'})

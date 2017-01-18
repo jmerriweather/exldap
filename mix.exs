@@ -1,7 +1,7 @@
 defmodule Exldap.Mixfile do
   use Mix.Project
 
-  @version "0.3.4"
+  @version "0.3.5"
   @url "https://github.com/jmerriweather/exldap"
   @maintainers ["Jonathan Merriweather"]
 
@@ -16,9 +16,9 @@ defmodule Exldap.Mixfile do
      description: "A module for working with LDAP from Elixir",
      source_url: @url,
      homepage_url: @url,
-     package: package,
-     deps: deps,
-     docs: docs
+     package: package(),
+     deps: deps(),
+     docs: docs()
     ]
   end
 

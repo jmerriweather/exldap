@@ -11,16 +11,44 @@ defmodule Exldap do
       {:error, error_description}
 
   """
-  def connect(timeout \\ :infinity) do
-    settings = Application.get_env :exldap, :settings
+  def connect(timeout \\ 3000) do
+    want =  Application.get_env(:exldap, :settings) 
+              |> Keyword.take([:server, :port, :ssl, :user_dn, :password])
 
-    server = settings |> Dict.get(:server)
-    port = settings |> Dict.get(:port)
-    ssl = settings |> Dict.get(:ssl)
-    user_dn = settings |> Dict.get(:user_dn)
-    password = settings |> Dict.get(:password)
+    connect(want, timeout)
+  end
 
-    connect(server, port, ssl, user_dn, password, timeout)
+  def connect([server: server, port: port, ssl: true, user_dn: user_dn, password: password], timeout) do
+    case :eldap.open([to_charlist(server)], [{:port, port}, {:ssl, true}, {:timeout, timeout}]) do
+      {:ok, connection} ->
+        case verify_credentials(connection, user_dn, password) do
+          :ok -> {:ok, connection}
+          {_, message} -> {:error, message}
+        end
+      error -> error
+    end
+  end
+
+  def connect([server: server, port: port, ssl: false, user_dn: user_dn, password: password], timeout) do
+    case :eldap.open([to_charlist(server)], [{:port, port}, {:timeout, timeout}]) do
+      {:ok, connection} ->
+        case verify_credentials(connection, user_dn, password) do
+          :ok -> {:ok, connection}
+          {_, message} -> {:error, message}
+        end
+      error -> error
+    end
+  end
+
+  def connect([server: server, port: port, user_dn: user_dn, password: password], timeout) do
+    case :eldap.open([to_charlist(server)], [{:port, port}, {:timeout, timeout}]) do
+      {:ok, connection} ->
+        case verify_credentials(connection, user_dn, password) do
+          :ok -> {:ok, connection}
+          {_, message} -> {:error, message}
+        end
+      error -> error
+    end
   end
 
 
@@ -63,9 +91,9 @@ defmodule Exldap do
   def open(timeout \\ :infinity) do
     settings = Application.get_env :exldap, :settings
 
-    server = settings |> Dict.get(:server)
-    port = settings |> Dict.get(:port)
-    ssl = settings |> Dict.get(:ssl)
+    server = settings |> Keyword.get(:server)
+    port = settings |> Keyword.get(:port)
+    ssl = settings |> Keyword.get(:ssl)
 
     open(server, port, ssl, timeout)
   end
@@ -131,7 +159,7 @@ defmodule Exldap do
   """
   def search_field(connection, field, name) do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
     search_field(connection, base, field, name)
   end
 
@@ -148,7 +176,7 @@ defmodule Exldap do
   """
   def search_field(connection, base, field, name) do
     settings = Application.get_env :exldap, :settings
-    search_timeout = settings |> Dict.get(:search_timeout) || 0
+    search_timeout = settings |> Keyword.get(:search_timeout) || 0
 
     base_config = {:base, to_charlist(base)}
     scope = {:scope, :eldap.wholeSubtree()}
@@ -172,7 +200,7 @@ defmodule Exldap do
   """
   def search_substring(connection, field, substring) do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
 
     search_substring(connection, base, field, substring)
   end
@@ -416,7 +444,7 @@ defmodule Exldap do
   """
   def search_with_filter(connection, filter) do
     settings = Application.get_env :exldap, :settings
-    base = settings |> Dict.get(:base)
+    base = settings |> Keyword.get(:base)
 
     search_with_filter(connection, base, filter)
   end
@@ -435,7 +463,7 @@ defmodule Exldap do
   """
   def search_with_filter(connection, base, filter) do
     settings = Application.get_env :exldap, :settings
-    search_timeout = settings |> Dict.get(:search_timeout) || 0
+    search_timeout = settings |> Keyword.get(:search_timeout) || 0
 
     base_config = {:base, to_charlist(base)}
     scope = {:scope, :eldap.wholeSubtree()}

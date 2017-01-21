@@ -149,6 +149,38 @@ defmodule Exldap do
   end
 
   @doc ~S"""
+  Chnage the password of a user
+
+  ## Example
+
+      iex> {:ok, connection} = Exldap.connect
+      iex> Exldap.change_password(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "NEW_PASSWORD")
+      :ok --> Successfully changed password
+      Or
+      {:error, error_messsage} --> Failed to changed password
+
+  """
+  def change_password(connection, user_dn, new_password) do
+    :eldap.modify_password(connection, user_dn, new_password)
+  end
+
+  @doc ~S"""
+  Chnage the password of a user
+
+  ## Example
+
+      iex> {:ok, connection} = Exldap.connect
+      iex> Exldap.change_password(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "NEW_PASSWORD", "OLD_PASSWORD")
+      :ok --> Successfully changed password
+      Or
+      {:error, error_messsage} --> Failed to changed password
+
+  """
+  def change_password(connection, user_dn, new_password, old_password) do
+    :eldap.modify_password(connection, user_dn, new_password, old_password)
+  end
+
+  @doc ~S"""
   Searches for a LDAP entry, the base dn is obtained from the config.exs
 
   ## Example

@@ -1,7 +1,7 @@
 defmodule Exldap.Mixfile do
   use Mix.Project
 
-  @version "0.3.6"
+  @version "0.4.0"
   @url "https://github.com/jmerriweather/exldap"
   @maintainers ["Jonathan Merriweather"]
 
@@ -57,8 +57,8 @@ defmodule Exldap.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:earmark, ">= 1.0.1", only: :dev},
-      {:ex_doc, "~> 0.13", only: :dev}
+      {:earmark, ">= 1.0.3", only: :dev},
+      {:ex_doc, "~> 0.14", only: :dev}
     ]
   end
 end

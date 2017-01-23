@@ -149,7 +149,7 @@ defmodule Exldap do
   end
 
   @doc ~S"""
-  Chnage the password of a user
+  Change the password of a user in active directory, must have SSL and must have connected with rights to change passwords
 
   ## Example
 
@@ -161,23 +161,35 @@ defmodule Exldap do
 
   """
   def change_password(connection, user_dn, new_password) do
-    :eldap.modify_password(connection, user_dn, new_password)
+    :eldap.modify(connection, to_charlist(user_dn), 
+    [
+      :eldap.mod_replace('unicodePwd', [encode_password(new_password)])
+    ])
   end
 
   @doc ~S"""
-  Chnage the password of a user
+  Change the password of the current user in active directory, must have SSL
 
   ## Example
 
       iex> {:ok, connection} = Exldap.connect
-      iex> Exldap.change_password(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "NEW_PASSWORD", "OLD_PASSWORD")
+      iex> Exldap.change_password(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "OLD_PASSWORD", "NEW_PASSWORD")
       :ok --> Successfully changed password
       Or
       {:error, error_messsage} --> Failed to changed password
 
   """
-  def change_password(connection, user_dn, new_password, old_password) do
-    :eldap.modify_password(connection, user_dn, new_password, old_password)
+  def change_password(connection, user_dn, old_password, new_password) do
+
+    :eldap.modify(connection, to_charlist(user_dn), 
+    [
+      :eldap.mod_delete('unicodePwd', [encode_password(old_password)]),
+      :eldap.mod_add('unicodePwd', [encode_password(new_password)])
+    ])
+  end
+
+  defp encode_password(password) do
+    :unicode.characters_to_binary("\"" <> password <> "\"", :utf8, {:utf16, :little})
   end
 
   @doc ~S"""

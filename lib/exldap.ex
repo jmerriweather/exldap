@@ -144,8 +144,8 @@ defmodule Exldap do
       {:error, :invalidCredentials} --> Failed to connect
 
   """
-  def verify_credentials(connection, user_dn, ""), do: {:error, :invalidCredentials}
-  def verify_credentials(connection, user_dn, ''), do: {:error, :invalidCredentials}
+  def verify_credentials(_connection, _user_dn, ""), do: {:error, :invalidCredentials}
+  def verify_credentials(_connection, _user_dn, ''), do: {:error, :invalidCredentials}
   def verify_credentials(connection, user_dn, password) do
     :eldap.simple_bind(connection, user_dn, password)
   end

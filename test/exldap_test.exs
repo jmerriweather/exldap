@@ -348,6 +348,28 @@ defmodule ExldapTest do
     assert result == {:error, :invalidCredentials}
 
     Exldap.close(connection)
+  end  
+
+  test "open LDAP connect and attempt authentication with blank password and invalid DN" do
+    {:ok, connection} = Exldap.open
+
+    result = Exldap.verify_credentials(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "")
+
+    assert result == {:error, :invalidCredentials}
+
+    Exldap.close(connection)
+  end
+
+  test "open LDAP connect and attempt authentication with blank password and correct DN" do
+    {:ok, connection} = Exldap.open
+    
+    user_dn = Application.get_env(:exldap, :settings) |> Keyword.get(:passwordchange_dn)
+
+    result = Exldap.verify_credentials(connection, user_dn, "")
+
+    assert result == {:error, :invalidCredentials}
+
+    Exldap.close(connection)
   end
 
   test "open LDAP connect and attempt to change password as admin" do

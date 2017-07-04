@@ -194,6 +194,21 @@ defmodule Exldap do
     :unicode.characters_to_binary("\"" <> password <> "\"", :utf8, {:utf16, :little})
   end
 
+
+  @doc ~S"""
+  Modifies an existing objects distinguished name, can be used to move users/computers
+
+  ## Example
+
+      # The following will rename the test123 account to test456 and move from OU=Accounts,DC=example,DC=com to OU=NewAccounts,DC=example,DC=com
+      iex> Exldap.modify_dn(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "CN=test456", true, "OU=NewAccounts,DC=example,DC=com")
+      :ok
+
+  """
+  def modify_dn(connection, dn_to_modify, new_rdn, delete_old_rdn, new_parent_ou \\ '') do
+    :eldap.modify_dn(connection, to_charlist(dn_to_modify), to_charlist(new_rdn), delete_old_rdn, to_charlist(new_parent_ou))    
+  end
+
   @doc ~S"""
   Searches for a LDAP entry, the base dn is obtained from the config.exs
 

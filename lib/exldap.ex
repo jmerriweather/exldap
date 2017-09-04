@@ -570,23 +570,79 @@ defmodule Exldap do
       iex> {:ok, first_result} = search_result |> Enum.fetch(0)
       iex> Exldap.search_attributes(first_result, "displayName")
       "Test User"
+      OR
+      nil
 
   """
   def search_attributes(%Exldap.Entry{} = entry, key) do
+    IO.warn("search_attributes will be depricated next version, please use get_attribute! instead", Macro.Env.stacktrace(__ENV__))
     list_key = key |> to_charlist
-    if List.keymember?(entry.attributes, list_key, 0) do
-      {_, value} = List.keyfind(entry.attributes, list_key, 0)
-      results = Enum.map(value, fn(x) ->
-        :erlang.list_to_binary(x)
-      end)
-      if Enum.count(results) == 1 do
-        List.first(results)
-      else
-        results
-      end
+    with {^list_key, results} <- List.keyfind(entry.attributes, list_key, 0) do
+      extract_attribute(results, [])
     else
+      _ -> nil
+    end  
+  end
+  
+  @doc ~S"""
+  Searches for a LDAP entry and extracts an attribute based on the specified key, if the attribute does not exist returns error
+
+  ## Example
+
+      iex> {:ok, connection} = Exldap.connect
+      iex> {:ok, search_results} = Exldap.search_field(connection, "OU=Accounts,DC=example,DC=com", "cn", "useraccount")
+      iex> {:ok, first_result} = search_result |> Enum.fetch(0)
+      iex> Exldap.get_attribute(first_result, "displayName")
+      {:ok, "Test User"}
+      OR
+      {:error, :attribute_does_not_exist}
+
+  """
+  def get_attribute(%Exldap.Entry{} = entry, key) do
+    list_key = key |> to_charlist
+    with {^list_key, results} <- List.keyfind(entry.attributes, list_key, 0) do
+      {:ok, extract_attribute(results, [])}
+    else
+      _ -> {:error, :attribute_does_not_exist}
+    end   
+  end
+  
+  @doc ~S"""
+  Searches for a LDAP entry and extracts an attribute based on the specified key, if the attribute does not exist returns nil
+
+  ## Example
+
+      iex> {:ok, connection} = Exldap.connect
+      iex> {:ok, search_results} = Exldap.search_field(connection, "OU=Accounts,DC=example,DC=com", "cn", "useraccount")
+      iex> {:ok, first_result} = search_result |> Enum.fetch(0)
+      iex> Exldap.get_attribute!(first_result, "displayName")
+      "Test User"
+      OR
       nil
-    end
+
+  """
+  def get_attribute!(%Exldap.Entry{} = entry, key) do
+    list_key = key |> to_charlist
+    with {^list_key, results} <- List.keyfind(entry.attributes, list_key, 0) do
+      extract_attribute(results, [])
+    else
+      _ -> nil
+    end   
   end
 
+  defp extract_attribute([first | []], []) do
+    :erlang.list_to_binary(first)
+  end
+
+  defp extract_attribute([first | rest], acc) do
+    extract_attribute(rest, [:erlang.list_to_binary(first) | acc])
+  end
+
+  defp extract_attribute([], acc) do
+    Enum.reverse(acc)
+  end
+
+  defp extract_attribute(unknown, []) do
+    unknown
+  end
 end

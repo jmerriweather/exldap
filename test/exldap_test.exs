@@ -94,6 +94,32 @@ defmodule ExldapTest do
 
     Exldap.close(connection)
   end
+  
+  test "connect to LDAP and get test123 cn attribute using get_attribute!" do
+    {:ok, connection} = Exldap.connect
+
+    {:ok, search_result} = Exldap.search_field(connection, "cn", "test123")
+    
+    {:ok, first_result} = search_result |> Enum.fetch(0)
+    object_cn = Exldap.get_attribute!(first_result, "cn")
+
+    assert object_cn == "test123"
+
+    Exldap.close(connection)
+  end
+  
+  test "connect to LDAP and get test123 cn attribute using get_attribute" do
+    {:ok, connection} = Exldap.connect
+
+    {:ok, search_result} = Exldap.search_field(connection, "cn", "test123")
+    
+    {:ok, first_result} = search_result |> Enum.fetch(0)
+    object_cn = Exldap.get_attribute(first_result, "cn")
+
+    assert object_cn == {:ok, "test123"}
+
+    Exldap.close(connection)
+  end
 
   test "connect to LDAP and get test123 cn attribute using charlists" do
     {:ok, connection} = Exldap.connect
@@ -101,7 +127,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_field(connection, 'cn', 'test123')
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, 'cn')
 
     assert object_cn == "test123"
 
@@ -116,7 +142,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, base, "samAccountName", {:initial, "test123"})
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
 
     assert object_cn == "test123"
 
@@ -131,7 +157,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, base, 'samAccountName', {:initial, 'test123'})
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, 'cn')
     
     assert object_cn == "test123"
 
@@ -143,7 +169,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, "cn", "test123")
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
 
     assert object_cn == "test123"
 
@@ -155,7 +181,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, 'cn', 'test123')
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, 'cn')
     
     assert object_cn == "test123"
 
@@ -170,7 +196,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, base, "cn", "test123")
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
 
     assert object_cn == "test123"
 
@@ -185,7 +211,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, base, 'cn', 'test123')
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, 'cn')
     
     assert object_cn == "test123"
 
@@ -200,7 +226,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, base, "cn", {:final, "test123"})
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
 
     assert object_cn == "test123"
 
@@ -215,7 +241,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_substring(connection, base, 'cn', {:final, 'test123'})
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, 'cn')
     
     assert object_cn == "test123"
 
@@ -242,7 +268,7 @@ defmodule ExldapTest do
     {:ok, connection} = Exldap.connect
     {:ok, search_result} = Exldap.search_substring(connection, base, "cn", {:initial, 'test123'})
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    groups = Exldap.search_attributes(first_result, "memberOf")
+    groups = Exldap.get_attribute!(first_result, "memberOf")
     
     assert is_list(groups)
     assert Enum.count(groups) > 1
@@ -259,7 +285,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_with_filter(connection, and_filter)
 
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
     
     assert object_cn == "test123"
 
@@ -275,7 +301,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_with_filter(connection, and_filter)
 
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
     
     assert object_cn == "test123"
 
@@ -294,7 +320,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_with_filter(connection, and_filter)
 
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
     
     assert object_cn == "test123"
 
@@ -316,7 +342,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_with_filter(connection, and_filter)
 
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
     
     assert object_cn == "test123"
 

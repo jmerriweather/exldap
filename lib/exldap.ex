@@ -1,5 +1,7 @@
 defmodule Exldap do
 
+  @type connect_result :: {:error, term()} | {:ok, term()}
+
   @doc ~S"""
   Connects to a LDAP server using the settings defined in config.exs
 
@@ -11,6 +13,7 @@ defmodule Exldap do
       {:error, error_description}
 
   """
+  @spec connect(timeout()) :: connect_result()
   def connect(timeout \\ 3000) do
     want =  Application.get_env(:exldap, :settings) 
               |> Keyword.take([:server, :port, :ssl, :user_dn, :password])
@@ -18,54 +21,42 @@ defmodule Exldap do
     connect(want, timeout)
   end
 
-  def connect([server: server, port: port, ssl: true, user_dn: user_dn, password: password], timeout) do
-    case :eldap.open([to_charlist(server)], [{:port, port}, {:ssl, true}, {:timeout, timeout}]) do
-      {:ok, connection} ->
-        case verify_credentials(connection, user_dn, password) do
-          :ok -> {:ok, connection}
-          {_, message} -> {:error, message}
-        end
-      error -> error
-    end
-  end
+  @doc ~S"""
+  Connects to an LDAP server using arguments from a keyword list.
 
-  def connect([server: server, port: port, ssl: false, user_dn: user_dn, password: password], timeout) do
-    case :eldap.open([to_charlist(server)], [{:port, port}, {:timeout, timeout}]) do
-      {:ok, connection} ->
-        case verify_credentials(connection, user_dn, password) do
-          :ok -> {:ok, connection}
-          {_, message} -> {:error, message}
-        end
-      error -> error
-    end
-  end
+  Required:
+  - :server
+  - :port
+  - :user_dn
+  - :password
 
-  def connect([server: server, port: port, user_dn: user_dn, password: password], timeout) do
-    case :eldap.open([to_charlist(server)], [{:port, port}, {:timeout, timeout}]) do
-      {:ok, connection} ->
-        case verify_credentials(connection, user_dn, password) do
-          :ok -> {:ok, connection}
-          {_, message} -> {:error, message}
-        end
-      error -> error
-    end
+  Optional:
+  - :ssl (defaults to false)
+  """
+  @spec connect(Keyword.t(), timeout()) :: connect_result()
+  def connect(args, timeout) when is_list(args) do
+    server = Keyword.fetch!(args, :server)
+    port = Keyword.fetch!(args, :port)
+    ssl = Keyword.get(args, :ssl, false)
+    user_dn = Keyword.fetch!(args, :user_dn)
+    password = Keyword.fetch!(args, :password)
+    connect(server, port, ssl, user_dn, password, timeout)
   end
-
 
   @doc ~S"""
   Connects to a LDAP server using the arguments passed into the function
 
   ## Example
 
-      iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", timeout \\ :infinity)
-      {:ok, connection}
-      Or
-      {:error, error_description}
+  iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", timeout \\ :infinity)
+  {:ok, connection}
+  Or
+  {:error, error_description}
 
   """
+  @spec connect(server :: String.t(), port :: pos_integer(), ssl :: boolean(), user_dn :: String.t(), password :: String.t(), timeout :: timeout()) :: connect_result()
   def connect(server, port, ssl, user_dn, password, timeout \\ :infinity)
   def connect(server, port, ssl, user_dn, password, timeout) do
-
     case open(server, port, ssl, timeout) do
       {:ok, connection} ->
         case verify_credentials(connection, user_dn, password) do
@@ -74,7 +65,6 @@ defmodule Exldap do
         end
       error -> error
     end
-
   end
 
   @doc ~S"""

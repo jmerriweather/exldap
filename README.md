@@ -90,3 +90,28 @@ case Exldap.verify_credentials(connection, "CN=test123,OU=Accounts,DC=example,DC
 end
 
 ```
+
+### Use SSL, validating certificates, from configuration
+
+```elixir 
+        use Mix.Config
+
+        config :exldap, :settings,
+          server: <server address>,
+          base: "DC=example,DC=com",
+          port: 636,
+          ssl: true,
+          sslopts: [cacertfile: 'path/to/ca.pem', verify: verify_peer]
+          user_dn: <user distinguished name>,
+          password: <password>,
+          search_timeout: 1000
+```
+
+### Use SSL, validating certificates, from configuration
+
+```elixir 
+        sslopts=[cacertfile: 'path/to/ca.pem', verify: verify_peer]
+        {:ok, connection} = Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", timeout, sslopts)
+        ...
+
+```

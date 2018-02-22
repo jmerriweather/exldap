@@ -88,7 +88,7 @@ defmodule ExldapTest do
     {:ok, search_result} = Exldap.search_field(connection, "cn", "test123")
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.search_attributes(first_result, "cn")
+    object_cn = Exldap.get_attribute!(first_result, "cn")
 
     assert object_cn == "test123"
 

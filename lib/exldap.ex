@@ -565,7 +565,7 @@ defmodule Exldap do
 
   """
   def search_attributes(%Exldap.Entry{} = entry, key) do
-    IO.warn("search_attributes will be depricated next version, please use get_attribute! instead", Macro.Env.stacktrace(__ENV__))
+    IO.warn("Exldap.search_attributes will be depricated next version, please use get_attribute! instead", Macro.Env.stacktrace(__ENV__))
     list_key = key |> to_charlist
     with {^list_key, results} <- List.keyfind(entry.attributes, list_key, 0) do
       extract_attribute(results, [])

@@ -225,13 +225,13 @@ defmodule Exldap do
       {:ok, search_results}
 
   """
-  def search_field(connection, base, field, name) do
+  def search_field(connection, base, field, value) do
     settings = Application.get_env :exldap, :settings
     search_timeout = settings |> Keyword.get(:search_timeout) || 0
 
     base_config = {:base, to_charlist(base)}
     scope = {:scope, :eldap.wholeSubtree()}
-    filter = {:filter, :eldap.equalityMatch(to_charlist(field), to_charlist(name))}
+    filter = {:filter, :eldap.equalityMatch(to_charlist(field), value)}
     timeout = {:timeout, search_timeout}
     options = [base_config, scope, filter, timeout]
 
@@ -354,7 +354,7 @@ defmodule Exldap do
 
   """
   def equalityMatch(field, value) do
-    :eldap.equalityMatch(to_charlist(field), to_charlist(value))
+    :eldap.equalityMatch(to_charlist(field), value)
   end
 
   @doc ~S"""

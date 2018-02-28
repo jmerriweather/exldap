@@ -1,7 +1,7 @@
 defmodule Exldap.Mixfile do
   use Mix.Project
 
-  @version "0.6.1"
+  @version "0.6.2"
   @url "https://github.com/jmerriweather/exldap"
   @maintainers ["Jonathan Merriweather"]
 

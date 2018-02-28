@@ -73,6 +73,20 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end
 
+  test "open works with ssl false" do
+    settings = Application.get_env :exldap, :settings
+    test_settings = Application.get_env(:exldap, :test)
+    
+    server = settings |> Keyword.get(:server)
+    port = test_settings |> Keyword.get(:non_ssl_port)
+
+    {success, connection} = Exldap.open(server, port, false)
+
+    assert success == :ok
+
+    Exldap.close(connection)
+  end
+
   test "close successfully closes the connection" do
     {:ok, connection} = Exldap.connect
     result = Exldap.close(connection)

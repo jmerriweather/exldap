@@ -93,13 +93,21 @@ defmodule Exldap do
 
   ## Example
 
-      iex> Exldap.open("SERVERADDRESS", 636, true, timeout \\ :infinity)
+      iex> Exldap.open("SERVERADDRESS", 636, true, timeout \\ :infinity, sslopts \\ [])
       {:ok, connection}
       Or
       {:error, error_description}
 
   """
   def open(server, port, ssl, timeout \\ :infinity, sslopts \\ [])
+
+  def open(server, port, false, :infinity, _) do
+    :eldap.open([to_charlist(server)], [{:port, port}, {:ssl, false}])
+  end
+
+  def open(server, port, false, timeout, _) do
+    :eldap.open([to_charlist(server)], [{:port, port}, {:ssl, false}, {:timeout, timeout}])
+  end
 
   def open(server, port, ssl, :infinity, sslopts) do
     :eldap.open([to_charlist(server)], [{:port, port}, {:ssl, ssl}, {:sslopts, sslopts}])

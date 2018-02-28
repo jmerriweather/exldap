@@ -9,7 +9,7 @@ The package can be installed as:
   1. Add exldap to your list of dependencies in `mix.exs`:
 ```elixir
         def deps do
-          [{:exldap, "~> 0.4"}]
+          [{:exldap, "~> 0.6"}]
         end
 ```
   2. Ensure exldap is started before your application:

@@ -61,7 +61,9 @@ defmodule Exldap do
       {:ok, connection} ->
         case verify_credentials(connection, user_dn, password) do
           :ok -> {:ok, connection}
-          {_, message} -> {:error, message}
+          {_, message} ->
+             close(connection)
+             {:error, message}
         end
       error -> error
     end

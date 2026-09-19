@@ -17,6 +17,9 @@ config :exldap, :settings,
 
 config :exldap, :test,
   non_ssl_port: 389,
+  test123_upn: "test123@samdom.example.com",
+  test123_netbios: "SAMDOM\\test123",
+  test123_password: "Passw0rd",
   passwordchange_dn: "CN=pwchange,OU=Accounts,DC=samdom,DC=example,DC=com",
   passwordchange_password: "Passw0rd",
   passwordchange_new: "N3wPassw0rd"

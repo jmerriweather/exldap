@@ -103,6 +103,29 @@ end
 
 ```
 
+### Verify a user's credentials without a service account
+
+Active Directory accepts a user principal name (`user@domain`) or `DOMAIN\user`
+for a simple bind, so an application can check a login without knowing the
+user's distinguished name and without a bind account of its own. Once bound,
+the same connection can be used to look up the user's own entry, for example
+to read group membership.
+
+```elixir
+{:ok, connection} = Exldap.open("SERVERADDRESS", 636, true)
+
+with :ok <- Exldap.verify_credentials(connection, "test123@example.com", "PASSWORD"),
+     {:ok, [entry]} <- Exldap.search_field(connection, "DC=example,DC=com", "sAMAccountName", "test123") do
+  Exldap.get_attribute(entry, "memberOf")
+end
+
+Exldap.close(connection)
+```
+
+This still sends the user's password to the application. Browser single sign-on
+with Kerberos (SPNEGO) has to happen at the HTTP layer, not here: `:eldap` only
+implements simple bind and has no SASL/GSSAPI support.
+
 ### Use SSL, validating certificates, from configuration
 
 ```elixir 

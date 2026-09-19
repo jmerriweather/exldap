@@ -412,6 +412,27 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end  
 
+  test "verify credentials with a user principal name and DOMAIN\\user, then read own entry" do
+    settings = Application.get_env(:exldap, :settings)
+    base = settings |> Keyword.get(:base)
+    test_settings = Application.get_env(:exldap, :test)
+    upn = test_settings |> Keyword.get(:test123_upn)
+    netbios = test_settings |> Keyword.get(:test123_netbios)
+    password = test_settings |> Keyword.get(:test123_password)
+
+    for name <- [upn, netbios] do
+      {:ok, connection} = Exldap.open
+
+      assert :ok == Exldap.verify_credentials(connection, name, password)
+
+      {:ok, [entry]} = Exldap.search_field(connection, base, "sAMAccountName", "test123")
+      {:ok, groups} = Exldap.get_attribute(entry, "memberOf")
+      assert Enum.count(groups) > 1
+
+      Exldap.close(connection)
+    end
+  end
+
   test "open LDAP connect and attempt authentication with blank password and invalid DN" do
     {:ok, connection} = Exldap.open
 

@@ -1,0 +1,12 @@
+# Loaded by the osixia/openldap container at first start (see docker-compose.yml).
+# Account used by test/exldap_openldap_test.exs for the RFC 3062 modify_password tests.
+dn: ou=People,dc=example,dc=org
+objectClass: organizationalUnit
+ou: People
+
+dn: uid=pwchange,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+uid: pwchange
+cn: pwchange
+sn: Change
+userPassword: Passw0rd

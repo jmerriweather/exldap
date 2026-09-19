@@ -151,7 +151,12 @@ defmodule Exldap do
   end
 
   @doc ~S"""
-  Change the password of a user in active directory, must have SSL and must have connected with rights to change passwords
+  Change the password of a user in **Active Directory** by replacing its `unicodePwd`
+  attribute. Requires an SSL connection and a bind with rights to reset passwords.
+
+  Active Directory does not implement the RFC 3062 password modify operation, which
+  is why this writes the attribute directly. For OpenLDAP and other RFC compliant
+  servers use `modify_password/3` instead.
 
   ## Example
 
@@ -170,7 +175,10 @@ defmodule Exldap do
   end
 
   @doc ~S"""
-  Change the password of the current user in active directory, must have SSL
+  Change the password of the current user in **Active Directory** by deleting the old
+  `unicodePwd` value and adding the new one. Requires an SSL connection.
+
+  For OpenLDAP and other RFC 3062 servers use `modify_password/4` instead.
 
   ## Example
 
@@ -192,6 +200,47 @@ defmodule Exldap do
 
   defp encode_password(password) do
     :unicode.characters_to_binary("\"" <> password <> "\"", :utf8, {:utf16, :little})
+  end
+
+  @doc ~S"""
+  Set the password of a user with the RFC 3062 password modify extended operation.
+  The connection must be bound with rights to reset passwords.
+
+  This works with OpenLDAP, 389 Directory Server and other RFC compliant servers.
+  Active Directory (and Samba AD) do not implement the operation and answer with
+  `{:error, {:response, :protocolError}}`, use `change_password/3` there.
+
+  ## Example
+
+      iex> {:ok, connection} = Exldap.connect
+      iex> Exldap.modify_password(connection, "uid=test123,ou=People,dc=example,dc=com", "NEW_PASSWORD")
+      :ok
+      Or
+      {:error, error_message}
+
+  """
+  def modify_password(connection, user_dn, new_password) do
+    :eldap.modify_password(connection, to_charlist(user_dn), to_charlist(new_password))
+  end
+
+  @doc ~S"""
+  Change the password of a user with the RFC 3062 password modify extended operation,
+  supplying the current password. Use this when the connection is bound as the user
+  whose password is being changed.
+
+  Active Directory (and Samba AD) do not implement the operation, use `change_password/4` there.
+
+  ## Example
+
+      iex> {:ok, connection} = Exldap.connect("SERVER", 636, true, "uid=test123,ou=People,dc=example,dc=com", "OLD_PASSWORD")
+      iex> Exldap.modify_password(connection, "uid=test123,ou=People,dc=example,dc=com", "OLD_PASSWORD", "NEW_PASSWORD")
+      :ok
+      Or
+      {:error, error_message}
+
+  """
+  def modify_password(connection, user_dn, old_password, new_password) do
+    :eldap.modify_password(connection, to_charlist(user_dn), to_charlist(new_password), to_charlist(old_password))
   end
 
 

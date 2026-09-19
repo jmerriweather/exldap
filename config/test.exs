@@ -20,3 +20,15 @@ config :exldap, :test,
   passwordchange_dn: "CN=pwchange,OU=Accounts,DC=samdom,DC=example,DC=com",
   passwordchange_password: "Passw0rd",
   passwordchange_new: "N3wPassw0rd"
+
+# OpenLDAP container (RFC 3062 modify_password tests in test/exldap_openldap_test.exs).
+config :exldap, :openldap,
+  server: "localhost",
+  port: 1636,
+  ssl: true,
+  sslopts: [verify: :verify_none],
+  user_dn: "cn=admin,dc=example,dc=org",
+  password: "admin",
+  passwordchange_dn: "uid=pwchange,ou=People,dc=example,dc=org",
+  passwordchange_password: "Passw0rd",
+  passwordchange_new: "N3wPassw0rd"

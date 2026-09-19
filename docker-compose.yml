@@ -1,11 +1,14 @@
-# Samba Active Directory domain controller for running the integration tests.
+# Directory servers for running the integration tests.
 #
 #   docker compose up -d --wait
 #   mix test                      # uses config/test.exs
-#   docker compose down -v        # discard the domain
+#   docker compose down -v        # discard the directories
 #
-# Realm SAMDOM.EXAMPLE.COM, base DN DC=samdom,DC=example,DC=com,
-# administrator CN=Administrator,CN=Users,... with password Passw0rd.
+# ad:       Samba Active Directory on 389/636. Realm SAMDOM.EXAMPLE.COM,
+#           base DN DC=samdom,DC=example,DC=com, administrator
+#           CN=Administrator,CN=Users,... with password Passw0rd.
+# openldap: OpenLDAP on 1389/1636 for the RFC 3062 modify_password tests.
+#           Base dc=example,dc=org, admin cn=admin,dc=example,dc=org / admin.
 services:
   ad:
     image: smblds/smblds:latest
@@ -26,3 +29,23 @@ services:
       interval: 5s
       timeout: 5s
       retries: 24
+
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: exldap-openldap
+    command: --copy-service
+    environment:
+      LDAP_ORGANISATION: Exldap
+      LDAP_DOMAIN: example.org
+      LDAP_ADMIN_PASSWORD: admin
+      LDAP_TLS_VERIFY_CLIENT: never
+    ports:
+      - "1389:389"
+      - "1636:636"
+    volumes:
+      - ./test/openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+    healthcheck:
+      test: ["CMD", "ldapsearch", "-x", "-H", "ldap://localhost", "-D", "cn=admin,dc=example,dc=org", "-w", "admin", "-b", "uid=pwchange,ou=People,dc=example,dc=org", "-s", "base", "dn"]
+      interval: 3s
+      timeout: 5s
+      retries: 30

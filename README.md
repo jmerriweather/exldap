@@ -62,6 +62,18 @@ result = Exldap.search_attributes(first_result, "displayName")
 
 ```
 
+### Change a password
+
+```elixir
+# Active Directory: writes unicodePwd directly, needs SSL
+:ok = Exldap.change_password(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "NEW_PASSWORD")
+:ok = Exldap.change_password(connection, "CN=test123,OU=Accounts,DC=example,DC=com", "OLD_PASSWORD", "NEW_PASSWORD")
+
+# OpenLDAP and other RFC 3062 servers: password modify extended operation
+:ok = Exldap.modify_password(connection, "uid=test123,ou=People,dc=example,dc=org", "NEW_PASSWORD")
+:ok = Exldap.modify_password(connection, "uid=test123,ou=People,dc=example,dc=org", "OLD_PASSWORD", "NEW_PASSWORD")
+```
+
 ### Verify credentials with configuration set in config.exs
 
 ```elixir
@@ -120,11 +132,12 @@ end
 
 `test/exldap_unit_test.exs` runs without a server. The integration tests in
 `test/exldap_test.exs` need an Active Directory. A Samba AD domain controller
-is provided via Docker, with the accounts the tests expect provisioned by
-`test/ad/10-provision-test-users.sh`:
+and an OpenLDAP server are provided via Docker, with the accounts the tests
+expect provisioned by `test/ad/10-provision-test-users.sh` and
+`test/openldap/50-test-users.ldif`:
 
 ```sh
-docker compose up -d --wait   # Samba AD on localhost:389 (LDAP) and :636 (LDAPS, self-signed)
+docker compose up -d --wait   # Samba AD on :389/:636, OpenLDAP on :1389/:1636 (self-signed certs)
 mix test                      # settings come from config/test.exs
 docker compose down -v        # discard the domain
 ```

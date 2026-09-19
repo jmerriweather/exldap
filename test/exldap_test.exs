@@ -452,6 +452,15 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end
 
+  test "modify_password is not supported by Active Directory" do
+    {:ok, connection} = Exldap.connect
+    passwordchange_dn = Application.get_env(:exldap, :test) |> Keyword.get(:passwordchange_dn)
+
+    assert {:error, {:response, :protocolError}} == Exldap.modify_password(connection, passwordchange_dn, "irrelevant")
+
+    Exldap.close(connection)
+  end
+
   test "open LDAP connect and attempt change password as a user" do
     
     server = Application.get_env(:exldap, :settings) |> Keyword.get(:server)

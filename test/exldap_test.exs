@@ -2,7 +2,7 @@ defmodule ExldapTest do
   use ExUnit.Case
 
   # The tests in this file rely on having correct LDAP details set in config/config.secure.exs
-  # and on have a 'test123' user account with a 'samAccountName' attribute of 'test123' and a 'cn' attribute of 'test123'
+  # and on have a ~c"test123" user account with a ~c"samAccountName" attribute of ~c"test123" and a ~c"cn" attribute of ~c"test123"
   # the test123 account should also be a member of multiple groups and NOT be disabled
 
   test "connect should connect with correct details and timeout set" do    
@@ -12,8 +12,9 @@ defmodule ExldapTest do
     ssl = settings |> Keyword.get(:ssl)
     user_dn = settings |> Keyword.get(:user_dn)
     password = settings |> Keyword.get(:password)
+    sslopts = settings |> Keyword.get(:sslopts, [])
 
-    {result, connection} = Exldap.connect(server, port, ssl, user_dn, password, 1000)
+    {result, connection} = Exldap.connect(server, port, ssl, user_dn, password, 1000, sslopts)
 
     assert result == :ok
 
@@ -27,8 +28,9 @@ defmodule ExldapTest do
     ssl = settings |> Keyword.get(:ssl)
     user_dn = settings |> Keyword.get(:user_dn)
     password = settings |> Keyword.get(:password)
+    sslopts = settings |> Keyword.get(:sslopts, [])
 
-    {result, connection} = Exldap.connect(server, port, ssl, user_dn, password)
+    {result, connection} = Exldap.connect(server, port, ssl, user_dn, password, :infinity, sslopts)
 
     assert result == :ok
 
@@ -38,13 +40,13 @@ defmodule ExldapTest do
   test "connect should fail if server doesn't exist with timeout set" do
     result = Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", 10)
 
-    assert result == {:error, 'connect failed'}
+    assert result == {:error, ~c"connect failed"}
   end
 
   test "connect should fail if server doesn't exist without timeout set" do
     result = Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD")
 
-    assert result == {:error, 'connect failed'}
+    assert result == {:error, ~c"connect failed"}
   end
 
   test "open works with timeout set" do
@@ -52,8 +54,9 @@ defmodule ExldapTest do
     server = settings |> Keyword.get(:server)
     port = settings |> Keyword.get(:port)
     ssl = settings |> Keyword.get(:ssl)
+    sslopts = settings |> Keyword.get(:sslopts, [])
 
-    {success, connection} = Exldap.open(server, port, ssl, 1000)
+    {success, connection} = Exldap.open(server, port, ssl, 1000, sslopts)
 
     assert success == :ok
 
@@ -65,8 +68,9 @@ defmodule ExldapTest do
     server = settings |> Keyword.get(:server)
     port = settings |> Keyword.get(:port)
     ssl = settings |> Keyword.get(:ssl)
+    sslopts = settings |> Keyword.get(:sslopts, [])
 
-    {success, connection} = Exldap.open(server, port, ssl)
+    {success, connection} = Exldap.open(server, port, ssl, :infinity, sslopts)
 
     assert success == :ok
 
@@ -138,10 +142,10 @@ defmodule ExldapTest do
   test "connect to LDAP and get test123 cn attribute using charlists" do
     {:ok, connection} = Exldap.connect
 
-    {:ok, search_result} = Exldap.search_field(connection, 'cn', 'test123')
+    {:ok, search_result} = Exldap.search_field(connection, ~c"cn", ~c"test123")
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.get_attribute!(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, ~c"cn")
 
     assert object_cn == "test123"
 
@@ -168,10 +172,10 @@ defmodule ExldapTest do
     base = settings |> Keyword.get(:base) |> to_charlist
     
     {:ok, connection} = Exldap.connect
-    {:ok, search_result} = Exldap.search_substring(connection, base, 'samAccountName', {:initial, 'test123'})
+    {:ok, search_result} = Exldap.search_substring(connection, base, ~c"samAccountName", {:initial, ~c"test123"})
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.get_attribute!(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, ~c"cn")
     
     assert object_cn == "test123"
 
@@ -192,10 +196,10 @@ defmodule ExldapTest do
 
   test "search any substring with charlist input without specifing a base" do    
     {:ok, connection} = Exldap.connect
-    {:ok, search_result} = Exldap.search_substring(connection, 'cn', 'test123')
+    {:ok, search_result} = Exldap.search_substring(connection, ~c"cn", ~c"test123")
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.get_attribute!(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, ~c"cn")
     
     assert object_cn == "test123"
 
@@ -222,10 +226,10 @@ defmodule ExldapTest do
     base = settings |> Keyword.get(:base) |> to_charlist
     
     {:ok, connection} = Exldap.connect
-    {:ok, search_result} = Exldap.search_substring(connection, base, 'cn', 'test123')
+    {:ok, search_result} = Exldap.search_substring(connection, base, ~c"cn", ~c"test123")
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.get_attribute!(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, ~c"cn")
     
     assert object_cn == "test123"
 
@@ -252,10 +256,10 @@ defmodule ExldapTest do
     base = settings |> Keyword.get(:base) |> to_charlist
     
     {:ok, connection} = Exldap.connect
-    {:ok, search_result} = Exldap.search_substring(connection, base, 'cn', {:final, 'test123'})
+    {:ok, search_result} = Exldap.search_substring(connection, base, ~c"cn", {:final, ~c"test123"})
     
     {:ok, first_result} = search_result |> Enum.fetch(0)
-    object_cn = Exldap.get_attribute!(first_result, 'cn')
+    object_cn = Exldap.get_attribute!(first_result, ~c"cn")
     
     assert object_cn == "test123"
 
@@ -280,7 +284,7 @@ defmodule ExldapTest do
     base = settings |> Keyword.get(:base)
     
     {:ok, connection} = Exldap.connect
-    {:ok, search_result} = Exldap.search_substring(connection, base, "cn", {:initial, 'test123'})
+    {:ok, search_result} = Exldap.search_substring(connection, base, "cn", {:initial, ~c"test123"})
     {:ok, first_result} = search_result |> Enum.fetch(0)
     groups = Exldap.get_attribute!(first_result, "memberOf")
     
@@ -290,7 +294,7 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end
 
-  test "search with an 'and' filter" do
+  test "search with an and filter" do
     first_name_filter = Exldap.substrings("givenName", {:any,"Test"})
     last_name_filter = Exldap.substrings("sn", [{:any,"123"}])
     and_filter = Exldap.with_and([first_name_filter, last_name_filter])
@@ -306,7 +310,7 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end
 
-  test "search with an 'or' filter" do
+  test "search with an or filter" do
     first_name_filter = Exldap.substrings("cn", {:initial,"test123"})
     last_name_filter = Exldap.substrings("sn", [{:any,"123"}])
     and_filter = Exldap.with_or([first_name_filter, last_name_filter])
@@ -322,7 +326,7 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end
 
-  test "search with a 'not' filter" do
+  test "search with a not filter" do
     first_name_filter = Exldap.substrings("givenName", {:initial,"test"})
     last_name_filter = Exldap.substrings("sn", [{:any,"123"}])
     
@@ -341,8 +345,8 @@ defmodule ExldapTest do
     Exldap.close(connection)
   end
 
-  test "search with a approxMatch, equalityMatch, greaterOrEqual, lessOrEqual_filter and present filter" do
-    cn_filter = Exldap.approxMatch("cn", "test123")
+  test "search with a equalityMatch, greaterOrEqual, lessOrEqual_filter, extensibleMatch and present filter" do
+    cn_filter = Exldap.equalityMatch("cn", "test123")
     last_name_filter = Exldap.equalityMatch("sn", "123")
     greaterOrEqual_filter = Exldap.greaterOrEqual("badPasswordTime", "10")
     lessOrEqual_filter = Exldap.lessOrEqual("badPwdCount", "10")
@@ -358,6 +362,24 @@ defmodule ExldapTest do
     {:ok, first_result} = search_result |> Enum.fetch(0)
     object_cn = Exldap.get_attribute!(first_result, "cn")
     
+    assert object_cn == "test123"
+
+    Exldap.close(connection)
+  end
+
+  # Samba AD does not implement approximate matching (returns operationsError),
+  # so this only passes against a real Active Directory. Run with:
+  #   mix test --include real_ad
+  @tag :real_ad
+  test "search with an approxMatch filter" do
+    cn_filter = Exldap.approxMatch("cn", "test123")
+
+    {:ok, connection} = Exldap.connect
+    {:ok, search_result} = Exldap.search_with_filter(connection, cn_filter)
+
+    {:ok, first_result} = search_result |> Enum.fetch(0)
+    object_cn = Exldap.get_attribute!(first_result, "cn")
+
     assert object_cn == "test123"
 
     Exldap.close(connection)
@@ -435,18 +457,19 @@ defmodule ExldapTest do
     server = Application.get_env(:exldap, :settings) |> Keyword.get(:server)
     port = Application.get_env(:exldap, :settings) |> Keyword.get(:port)    
     ssl = Application.get_env(:exldap, :settings) |> Keyword.get(:ssl)
+    sslopts = Application.get_env(:exldap, :settings) |> Keyword.get(:sslopts, [])
 
     passwordchange_dn = Application.get_env(:exldap, :test) |> Keyword.get(:passwordchange_dn)
     passwordchange_password = Application.get_env(:exldap, :test) |> Keyword.get(:passwordchange_password)
     passwordchange_new = Application.get_env(:exldap, :test) |> Keyword.get(:passwordchange_new)
       
-    {:ok, connection} = Exldap.connect([server: server, port: port, ssl: ssl, user_dn: passwordchange_dn, password: passwordchange_password], 3000)
+    {:ok, connection} = Exldap.connect([server: server, port: port, ssl: ssl, sslopts: sslopts, user_dn: passwordchange_dn, password: passwordchange_password], 3000)
 
     result = Exldap.change_password(connection, passwordchange_dn, passwordchange_password, passwordchange_new)
     
     assert result == :ok
     
-    {:ok, connection} = Exldap.connect([server: server, port: port, ssl: ssl, user_dn: passwordchange_dn, password: passwordchange_new], 3000)
+    {:ok, connection} = Exldap.connect([server: server, port: port, ssl: ssl, sslopts: sslopts, user_dn: passwordchange_dn, password: passwordchange_new], 3000)
 
     result = Exldap.change_password(connection, passwordchange_dn, passwordchange_new, passwordchange_password)
 

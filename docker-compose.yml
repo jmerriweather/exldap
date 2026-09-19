@@ -1,0 +1,28 @@
+# Samba Active Directory domain controller for running the integration tests.
+#
+#   docker compose up -d --wait
+#   mix test                      # uses config/test.exs
+#   docker compose down -v        # discard the domain
+#
+# Realm SAMDOM.EXAMPLE.COM, base DN DC=samdom,DC=example,DC=com,
+# administrator CN=Administrator,CN=Users,... with password Passw0rd.
+services:
+  ad:
+    image: smblds/smblds:latest
+    container_name: exldap-ad
+    environment:
+      REALM: SAMDOM.EXAMPLE.COM
+      DOMAIN: SAMDOM
+      ADMINPASS: Passw0rd
+      INSECURE_LDAP: "true"             # allow simple bind over plain 389 for the ssl: false tests
+      INSECURE_PASSWORDSETTINGS: "true"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./test/ad:/entrypoint.d:ro
+    healthcheck:
+      test: ["CMD", "ldapsearch", "-s", "base", "dn"]  # image wrapper supplies URI and admin credentials
+      interval: 5s
+      timeout: 5s
+      retries: 24

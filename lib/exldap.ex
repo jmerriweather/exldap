@@ -383,10 +383,11 @@ defmodule Exldap do
 
   """
   def extensibleMatch(match_value, match_attributes) do
-    list_as_charlist = Enum.map(match_attributes, fn({atom, match_attribute}) ->
-      {atom, to_charlist(match_attribute)}
+    attributes = Enum.map(match_attributes, fn
+      {:dnAttributes, value} when is_boolean(value) -> {:dnAttributes, value}
+      {atom, match_attribute} -> {atom, to_charlist(match_attribute)}
     end)
-    :eldap.extensibleMatch(to_charlist(match_value), list_as_charlist)
+    :eldap.extensibleMatch(to_charlist(match_value), attributes)
   end
 
   @doc ~S"""

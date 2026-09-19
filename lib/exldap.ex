@@ -49,10 +49,10 @@ defmodule Exldap do
 
   ## Example
 
-  iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", timeout \\ :infinity)
-  {:ok, connection}
-  Or
-  {:error, error_description}
+      iex> Exldap.connect("SERVERADDRESS", 636, true, "CN=test123,OU=Accounts,DC=example,DC=com", "PASSWORD", timeout \\ :infinity)
+      {:ok, connection}
+      Or
+      {:error, error_description}
 
   """
   @spec connect(server :: String.t(), port :: pos_integer(), ssl :: boolean(), user_dn :: String.t(), password :: String.t(), timeout :: timeout(), sslopts :: keyword()) :: connect_result()

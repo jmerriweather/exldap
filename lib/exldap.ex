@@ -145,7 +145,7 @@ defmodule Exldap do
 
   """
   def verify_credentials(_connection, _user_dn, ""), do: {:error, :invalidCredentials}
-  def verify_credentials(_connection, _user_dn, ''), do: {:error, :invalidCredentials}
+  def verify_credentials(_connection, _user_dn, ~c""), do: {:error, :invalidCredentials}
   def verify_credentials(connection, user_dn, password) do
     :eldap.simple_bind(connection, user_dn, password)
   end
@@ -165,7 +165,7 @@ defmodule Exldap do
   def change_password(connection, user_dn, new_password) do
     :eldap.modify(connection, to_charlist(user_dn),
     [
-      :eldap.mod_replace('unicodePwd', [encode_password(new_password)])
+      :eldap.mod_replace(~c"unicodePwd", [encode_password(new_password)])
     ])
   end
 
@@ -185,8 +185,8 @@ defmodule Exldap do
 
     :eldap.modify(connection, to_charlist(user_dn),
     [
-      :eldap.mod_delete('unicodePwd', [encode_password(old_password)]),
-      :eldap.mod_add('unicodePwd', [encode_password(new_password)])
+      :eldap.mod_delete(~c"unicodePwd", [encode_password(old_password)]),
+      :eldap.mod_add(~c"unicodePwd", [encode_password(new_password)])
     ])
   end
 
@@ -205,7 +205,7 @@ defmodule Exldap do
       :ok
 
   """
-  def modify_dn(connection, dn_to_modify, new_rdn, delete_old_rdn, new_parent_ou \\ '') do
+  def modify_dn(connection, dn_to_modify, new_rdn, delete_old_rdn, new_parent_ou \\ ~c"") do
     :eldap.modify_dn(connection, to_charlist(dn_to_modify), to_charlist(new_rdn), delete_old_rdn, to_charlist(new_parent_ou))
   end
 
@@ -269,6 +269,7 @@ defmodule Exldap do
   @doc ~S"""
   Searches for a LDAP entry via a field using a substring.
   For example, if you want to find all entries that have a last name that starts with "smi", you could supply {:initial, "smi"} to the substring parameter.
+  If a plain string is passed as the substring then the default action is {:any, substring}.
 
   ## Example
 
@@ -276,25 +277,17 @@ defmodule Exldap do
       iex> search_within = "OU=Accounts,DC=example,DC=com"
       iex> search_results = Exldap.search_substring(connection, search_within, "sn", {:initial, "smi"})
       {:ok, search_results}
-
-  """
-  def search_substring(connection, base, field, {atom, substring}) do
-    #filter = :eldap.substrings(to_charlist(field), [{:any, to_charlist(substring)}])
-    filter = substrings(field, {atom, substring})
-    search_with_filter(connection, base, filter)
-  end
-
-  @doc ~S"""
-  Searches for a LDAP entry via a field using a substring. If a string is passed to substring then the default action is {:any, substring}
-
-  ## Example
-
-      iex> {:ok, connection} = Exldap.connect
-      iex> search_within = "OU=Accounts,DC=example,DC=com"
       iex> search_results = Exldap.search_substring(connection, search_within, "sn", "middle")
       {:ok, search_results}
 
   """
+  def search_substring(connection, base, field, substring)
+
+  def search_substring(connection, base, field, {atom, substring}) do
+    filter = substrings(field, {atom, substring})
+    search_with_filter(connection, base, filter)
+  end
+
   def search_substring(connection, base, field, substring) do
     search_substring(connection, base, field, {:any, substring})
   end

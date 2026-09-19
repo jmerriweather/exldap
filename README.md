@@ -20,7 +20,7 @@ The package can be installed as:
 ```
   3. Optionally add 'config\config.secret.exs' file with:
 ```elixir
-        use Mix.Config
+        import Config
 
         config :exldap, :settings,
           server: <server address>,
@@ -94,7 +94,7 @@ end
 ### Use SSL, validating certificates, from configuration
 
 ```elixir 
-        use Mix.Config
+        import Config
 
         config :exldap, :settings,
           server: <server address>,
@@ -115,3 +115,25 @@ end
         ...
 
 ```
+
+## Running the tests
+
+`test/exldap_unit_test.exs` runs without a server. The integration tests in
+`test/exldap_test.exs` need an Active Directory. A Samba AD domain controller
+is provided via Docker, with the accounts the tests expect provisioned by
+`test/ad/10-provision-test-users.sh`:
+
+```sh
+docker compose up -d --wait   # Samba AD on localhost:389 (LDAP) and :636 (LDAPS, self-signed)
+mix test                      # settings come from config/test.exs
+docker compose down -v        # discard the domain
+```
+
+To run against a real directory instead, create `config/config.secret.exs`
+with your own `:settings` and `:test` keys (see `config/test.exs`). Tests
+tagged `:real_ad` cover behaviour Samba does not implement, such as
+approximate matching, and run with `mix test --include real_ad`.
+
+Note: if you upgrade Erlang/OTP, recompile this library with
+`mix deps.compile exldap --force`. The record shapes in `:eldap` are read at
+compile time.
